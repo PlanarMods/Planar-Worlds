@@ -66,3 +66,7 @@ cargo check --locked
 ## 许可证
 
 本仓库使用 [MIT 许可证](LICENSE)。Horizon 和 Minecraft 的代码与资源各自遵循其原有许可。
+
+## 开发声明
+
+本项目的代码由 ChatGPT 6.1 Sol 生成，架构设计和测试由人类负责。
