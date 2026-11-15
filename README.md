@@ -1,4 +1,4 @@
-<img src="planar-worlds-icon.svg" alt="Planar Worlds 图标" width="96" align="right">
+<img src="planar-worlds-icon.png" alt="Planar Worlds 图标" width="96" align="right">
 
 # Planar Worlds
 
