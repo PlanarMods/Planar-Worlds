@@ -1,72 +1,74 @@
-<img src="planar-worlds-icon.png" alt="Planar Worlds 图标" width="96" align="right">
+<img src="planar-worlds-icon.png" alt="Planar Worlds icon" width="96" align="right">
 
 # Planar Worlds
 
-Planar Worlds 是 Horizon 的 Rust 原生模组。它把《Minecraft》的主世界变成类似《泰拉瑞亚》的 2D 横版世界。你可以沿地表左右探索，也可以从侧面挖进洞穴、采矿和建造。
+English · [简体中文](README.zh.md)
 
-## 玩法
+Planar Worlds is a native Rust mod for Horizon that turns the Minecraft Overworld into a 2D side-scrolling world inspired by Terraria. Explore the surface, dig into caves, mine ores, and build.
 
-- **单层地形**。前景位于 `Z=0`，保留地表高差、洞穴、矿石、基岩和流体。新生成的区块会生成平面的树干和树冠。
-- **固定侧视**。正交镜头沿 X/Y 平面跟随玩家，角色和生物以左右侧身显示。
-- **剖面光照**。天空光和方块光沿剖面传播，岩层亮度逐格衰减，完全无光的矿石被黑暗遮住。
-- **背景墙**。背景位于 `Z=1`，渲染在前景后方，可放置和挖掘，也可以直接穿过。
+## Features
 
-## 实机截图
+- **Single-layer terrain.** The foreground at `Z=0` includes hills, caves, ores, bedrock, and fluids. Newly generated chunks grow 2D trees with vertical trunks and symmetric canopies.
+- **Fixed side view.** An orthographic camera follows the player in the X/Y plane. Players and mobs face left or right.
+- **Lighting in the terrain cross-section.** Sky light and block light spread through the slice. Light fades into the rock one block at a time, hiding unlit ores.
+- **Background walls.** Blocks at `Z=1` appear behind the foreground. You can place and mine them, and walk through them.
 
-![玩家以侧视角在地表跳跃，下方是逐渐变暗的地层](1.png)
+## Gameplay screenshots
 
-![玩家采集木材，周围可见 2D 树木和对称树冠](2.png)
+![The player jumps across the surface above layers of gradually darkening terrain](1.png)
 
-![玩家站在水面上方的木板平台，水中可见鱿鱼](3.png)
+![The player gathers wood among 2D trees with symmetric canopies](2.png)
 
-## 操作
+![The player stands on a wooden platform above water with a squid below](3.png)
 
-在 Horizon 的创建世界界面打开 **Planar Mode**，然后创建世界。
+## Controls
 
-| 操作 | 效果 |
+Enable **Planar Mode** on Horizon's Create World screen before creating a world.
+
+| Input | Action |
 | --- | --- |
-| `A` / `D`、空格 | 左右移动、跳跃 |
-| 移动鼠标 | 瞄准触及范围内最先命中的方块，黑白线框标出目标 |
-| 按住左键 | 持续挖掘命中的方块 |
-| 右键 | 对命中的方块执行原版交互或放置 |
-| 手持方块，按住右键指向空气 | 在触及范围内直接放置，最多 5 格，避开玩家身体占用的格子 |
-| `Ctrl` + 左键 / 右键 | 挖掘 / 放置背景墙，灰色线框标出背景目标 |
+| `A` / `D`, `Space` | Move left or right, and jump |
+| Move the mouse | Aim at the first block hit within reach. A black-and-white outline marks the target. |
+| Hold left-click | Keep mining the targeted block. |
+| Right-click | Interact with the targeted block or use its face to place a block. |
+| Hold right-click while aiming at an empty cell with a block in hand | Place directly in the empty cell within reach, up to five blocks away. Cells occupied by the player are excluded. |
+| `Ctrl` + left-click / right-click | Mine or place background walls. A gray outline marks the background target. |
 
-树木生成修复会在新生成的区块生效。旧世界可以继续游玩和探索新区块。
+The tree generation fix applies to newly generated chunks. Existing worlds can still be played and explored.
 
-## 功能限制与模组兼容性
+## Limitations and compatibility
 
-- **维度与传送门**。当前的 Planar Mode 仅支持单人主世界。下界传送门、末地传送门，以及下界和末地的 2D 维度均未实现。
-- **与其他模组的兼容性较低**。Planar Worlds 会修改世界生成、渲染、移动与碰撞以及方块交互。其他模组如果也修改这些系统，可能发生冲突。
+- **Dimensions and portals.** Planar Mode currently supports the single-player Overworld only. Nether portals, End portals, and 2D versions of the Nether and the End have yet to be implemented.
+- **Limited compatibility with other mods.** Planar Worlds changes world generation, rendering, movement, collision, and block interaction. Mods that change the same systems may conflict.
 
-## 安装
+## Installation
 
-当前版本为 **0.3.6**，目标为 **Horizon / Minecraft 26.3**。原生构建固定到 Horizon 提交 `f82620a74aa1b5bb5f9a46785828ec90ee24e435`。当前玩法面向 Horizon 单人世界的主世界。
+Version **0.3.6** targets **Horizon / Minecraft 26.3**. The native build is pinned to Horizon commit `f82620a74aa1b5bb5f9a46785828ec90ee24e435`.
 
-### 从源码构建
+### Build from source
 
-克隆本仓库并进入源码目录，在 Horizon 启动器选择要使用的实例并构建原生模组。也可以通过启动器的命令行显式指定源码目录和实例：
+Clone this repository and enter its directory. Select your instance in the Horizon Launcher and build the native mod. You can also specify the source directory and instance on the command line.
 
 ```sh
-horizon-launcher native-build . --instance "实例名称" --trust-native-code
+horizon-launcher native-build . --instance "Instance name" --trust-native-code
 ```
 
-构建完成后，用该实例启动 Horizon。如果已有 `.hnmod` 安装包，也可以将其放入实例的 `horizon-native-mods/` 目录，启用 Planar Worlds，然后在启动器中重新构建原生模组。
+Once the build finishes, launch Horizon with that instance. If you already have an `.hnmod` package, put it in the instance's `horizon-native-mods/` directory, enable Planar Worlds, and rebuild the native mod in the launcher.
 
-### 本地 Rust 检查
+### Check the Rust code locally
 
-将同一提交的 Horizon 源码放在本仓库旁边的 `horizon/` 目录，再在本仓库运行：
+Check out the pinned Horizon commit in a sibling directory named `horizon/`, then run this command from the Planar Worlds repository.
 
 ```sh
 cargo check --locked
 ```
 
-这个命令检查模组入口和共享状态 crate。要检查注入后的游戏代码，请通过 Horizon 启动器构建原生模组，或先用 Horizon Mixins 应用本仓库的 [Mixin 清单](horizon-mixin.toml)，再对生成的工作区运行 Cargo 检查。
+This checks the mod entry point and the shared state crate. To check the game code with the mixins applied, build the native mod in the Horizon Launcher or apply the [mixin manifest](horizon-mixin.toml) with Horizon Mixins and run Cargo checks in the generated workspace.
 
-## 许可证
+## License
 
-本仓库使用 [MIT 许可证](LICENSE)。Horizon 和 Minecraft 的代码与资源各自遵循其原有许可。
+This repository uses the [MIT License](LICENSE). Horizon and Minecraft code and assets remain subject to their respective licenses.
 
-## 开发声明
+## Development attribution
 
-本项目的代码由 ChatGPT 6.1 Sol 生成，架构设计和测试由人类负责。
+The code was generated by ChatGPT 6.1 Sol. Humans were responsible for the architecture and testing.
