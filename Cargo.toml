@@ -1,0 +1,10 @@
+[workspace]
+members = ["api", "state"]
+resolver = "2"
+
+# Match the dependency patches from the sibling Horizon checkout for local checks.
+# The launcher builds api/ inside Horizon's own workspace.
+[patch.crates-io]
+wgpu-hal = { path = "../horizon/third_party/wgpu-hal" }
+naga = { path = "../horizon/third_party/naga" }
+libmimalloc-sys = { path = "../horizon/third_party/libmimalloc-sys" }
