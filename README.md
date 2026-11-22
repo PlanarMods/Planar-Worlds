@@ -4,11 +4,13 @@
 
 English · [简体中文](README.zh.md)
 
+**0.3.7 migration status.** The new `.hmod` package format and SDK entry point pass local checks. The existing game-internals mixins still require adaptation to Horizon's function-replacement SDK before this version can be built into a playable client.
+
 Planar Worlds is a native Rust mod for Horizon that turns the Minecraft Overworld into a 2D side-scrolling world inspired by Terraria. Explore the surface, dig into caves, mine ores, and build.
 
 ## Features
 
-- **Single-layer terrain.** The foreground at `Z=0` includes hills, caves, ores, bedrock, and fluids. Newly generated chunks grow 2D trees with vertical trunks and symmetric canopies.
+- **Single-layer terrain.** The foreground at `Z=0` includes hills, caves, ores, bedrock, and fluids. The 0.3.7 generator places trees and three surface layers behind it at `Z=1`, with vertical trunks and symmetric canopies.
 - **Fixed side view.** An orthographic camera follows the player in the X/Y plane. Players and mobs face left or right.
 - **Lighting in the terrain cross-section.** Sky light and block light spread through the slice. Light fades into the rock one block at a time, hiding unlit ores.
 - **Background walls.** Blocks at `Z=1` appear behind the foreground. You can place and mine them, and walk through them.
@@ -43,7 +45,7 @@ The tree generation fix applies to newly generated chunks. Existing worlds can s
 
 ## Installation
 
-Version **0.3.6** targets **Horizon / Minecraft 26.3**. The native build is pinned to Horizon commit `f82620a74aa1b5bb5f9a46785828ec90ee24e435`.
+Version **0.3.7** targets **Horizon / Minecraft 26.3**. Its SDK is pinned to the published Nightly commit `0b14f8acfd97fa2c750e42795249dcc981178ca4`. Native game-internals compatibility remains pending.
 
 ### Build from source
 
@@ -53,17 +55,20 @@ Clone this repository and enter its directory. Select your instance in the Horiz
 horizon-launcher native-build . --instance "Instance name" --trust-native-code
 ```
 
-Once the build finishes, launch Horizon with that instance. If you already have an `.hnmod` package, put it in the instance's `horizon-native-mods/` directory, enable Planar Worlds, and rebuild the native mod in the launcher.
+The launcher build currently requires further adaptation of the mixins. The source package uses the flat `.hmod` layout with `horizon-mod.toml`, `Cargo.toml`, and `src/`. The launcher generates its internal Mixin manifest during staging.
 
 ### Check the Rust code locally
 
-Check out the pinned Horizon commit in a sibling directory named `horizon/`, then run this command from the Planar Worlds repository.
+Fetch the pinned SDK and check the mod entry point from the Planar Worlds repository.
 
 ```sh
+cargo horizon-mod hooks camera
 cargo check --locked
+cargo horizon-mod build
+cargo horizon-mod check target/horizon-mod/planar_worlds.hmod
 ```
 
-This checks the mod entry point and the shared state crate. To check the game code with the mixins applied, build the native mod in the Horizon Launcher or apply the [mixin manifest](horizon-mixin.toml) with Horizon Mixins and run Cargo checks in the generated workspace.
+These commands validate the SDK entry point and package. A successful package check does not validate the game functions named by the [native Mixin declarations](horizon-mod.toml). Several existing targets, including projection, collision and meshing functions, have no replacement slot in the pinned SDK.
 
 ## License
 

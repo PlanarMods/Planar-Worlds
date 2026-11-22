@@ -1,3 +1,7 @@
 /target/
 /*.hnmod
 /planar-worlds-*-source.zip
+
+/.horizon/
+/*.hmod
+/模拟器/

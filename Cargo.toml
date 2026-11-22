@@ -1,10 +1,10 @@
-[workspace]
-members = ["api", "state"]
-resolver = "2"
+[package]
+name = "mod-planar-worlds"
+version = "0.3.7"
+edition = "2024"
+license = "MIT"
 
-# Match the dependency patches from the sibling Horizon checkout for local checks.
-# The launcher builds api/ inside Horizon's own workspace.
-[patch.crates-io]
-wgpu-hal = { path = "../horizon/third_party/wgpu-hal" }
-naga = { path = "../horizon/third_party/naga" }
-libmimalloc-sys = { path = "../horizon/third_party/libmimalloc-sys" }
+[dependencies]
+horizon-mod-api = { path = ".horizon/sdk/api/crates/horizon-mod-api" }
+log = "=0.4.34"
+

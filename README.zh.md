@@ -2,6 +2,8 @@
 
 # Planar Worlds
 
+**0.3.7 迁移状态**。新版 `.hmod` 包格式和 SDK 入口已通过本地检查。现有游戏内部 Mixin 仍需适配 Horizon 的函数替换 SDK，完成后才能构建可玩的客户端。
+
 [English](README.md) · 简体中文
 
 Planar Worlds 是 Horizon 的 Rust 原生模组。它把《Minecraft》的主世界变成类似《泰拉瑞亚》的 2D 横版世界。你可以沿地表左右探索，也可以从侧面挖进洞穴、采矿和建造。
@@ -43,7 +45,7 @@ Planar Worlds 是 Horizon 的 Rust 原生模组。它把《Minecraft》的主世
 
 ## 安装
 
-当前版本为 **0.3.6**，目标为 **Horizon / Minecraft 26.3**。原生构建固定到 Horizon 提交 `f82620a74aa1b5bb5f9a46785828ec90ee24e435`。当前玩法面向 Horizon 单人世界的主世界。
+当前迁移版本为 **0.3.7**，目标为 **Horizon / Minecraft 26.3**。SDK 固定到已发布的 Nightly 提交 `0b14f8acfd97fa2c750e42795249dcc981178ca4`。游戏内部 Mixin 的兼容性适配仍在进行。
 
 ### 从源码构建
 
@@ -53,17 +55,22 @@ Planar Worlds 是 Horizon 的 Rust 原生模组。它把《Minecraft》的主世
 horizon-launcher native-build . --instance "实例名称" --trust-native-code
 ```
 
-构建完成后，用该实例启动 Horizon。如果已有 `.hnmod` 安装包，也可以将其放入实例的 `horizon-native-mods/` 目录，启用 Planar Worlds，然后在启动器中重新构建原生模组。
+启动器原生构建仍需进一步适配 Mixin。源码包采用扁平的 `.hmod` 结构，包含 `horizon-mod.toml`、`Cargo.toml` 和 `src/`。启动器会在暂存阶段生成内部的 Mixin 清单。
 
 ### 本地 Rust 检查
 
-将同一提交的 Horizon 源码放在本仓库旁边的 `horizon/` 目录，再在本仓库运行：
+在本仓库获取固定版本的 SDK 并检查模组入口。
 
 ```sh
+cargo horizon-mod hooks camera
 cargo check --locked
+cargo horizon-mod build
+cargo horizon-mod check target/horizon-mod/planar_worlds.hmod
 ```
 
-这个命令检查模组入口和共享状态 crate。要检查注入后的游戏代码，请通过 Horizon 启动器构建原生模组，或先用 Horizon Mixins 应用本仓库的 [Mixin 清单](horizon-mixin.toml)，再对生成的工作区运行 Cargo 检查。
+这些命令检查 SDK 入口和包格式。包校验成功不能验证 [原生 Mixin 声明](horizon-mod.toml) 中的目标函数。现有投影、碰撞和网格等部分注入目标在固定版本 SDK 中没有可替换槽位。
+
+0.3.7 的树木生成逻辑已将树干、树叶和地表三层土壤写入背景层 `Z=1`，前景 `Z=0` 用于玩家行走与挖掘。该改动需要上述原生适配完成后才能在新版启动器中使用。
 
 ## 许可证
 

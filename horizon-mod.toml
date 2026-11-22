@@ -1,0 +1,591 @@
+# Migration package. The SDK entry point and package validate, while the
+# legacy function-replacement declarations below still require adaptation.
+# See README.md and target/migration-0.3.7/validation.json for validation scope.
+id = "planar_worlds"
+name = "Planar Worlds"
+version = "0.3.7"
+description = "A 2D side-scrolling Overworld with background walls and trees."
+authors = ["PlanarMods"]
+license = "MIT"
+license_url = "https://github.com/PlanarMods/Planar-Worlds/blob/main/LICENSE"
+homepage = "https://github.com/PlanarMods/Planar-Worlds"
+issues = "https://github.com/PlanarMods/Planar-Worlds/issues"
+api = "0.2"
+side = "both"
+capabilities = ["registries"]
+
+[native]
+game = "26.3"
+horizon = "dd67b76ff23e28c6d8e21859df600d31572f81a0"
+mixins = "e59da9094f0c2fdda6c627fe9eff22dec6a906f0"
+
+[[native.module]]
+id = "terrain"
+name = "planar_worlds"
+file = "crates/horizon-client/src/game.rs"
+source = "src/terrain.rs"
+
+[[native.mixin]]
+id = "confirm-create"
+target = "horizon_client::game::world_session::Game<'_>::open_world"
+kind = "HEAD"
+cancellable = true
+helper = "src/confirm.rs"
+bindings = [
+    { name = "folder", ty = "&str", value = "folder" },
+    { name = "create", ty = "Option<&crate::title::WorldOptions>", value = "create" },
+]
+
+[[native.mixin]]
+id = "select-generator"
+target = "horizon_client::game::world_loading::make_streaming"
+kind = "HEAD"
+cancellable = true
+helper = "src/streaming.rs"
+bindings = [
+    { name = "res", ty = "&crate::game::Resources", value = "res" },
+    { name = "pack", ty = "&crate::game::PackResources", value = "pack" },
+    { name = "options", ty = "&crate::game::Options", value = "options" },
+    { name = "settings", ty = "&crate::game::Settings", value = "settings" },
+    { name = "world_root", ty = "&std::path::Path", value = "world_root" },
+    { name = "dim", ty = "crate::game::Dim", value = "dim" },
+    { name = "shape", ty = "crate::chunk::LevelShape", value = "shape" },
+    { name = "seed", ty = "i64", value = "seed" },
+    { name = "enabled_features", ty = "&[String]", value = "enabled_features" },
+    { name = "biomes", ty = "&Arc<horizon_client::biome::Biomes>", value = "&biomes" },
+]
+
+[[native.mixin]]
+id = "anchor-spawn"
+target = "horizon_client::game::initial_spawn::Game<'_>::spawn_origin"
+kind = "HEAD"
+cancellable = true
+helper = "src/spawn.rs"
+bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "self" }]
+
+[[native.module]]
+id = "side"
+name = "planar_side"
+file = "crates/horizon-client/src/game.rs"
+source = "src/side.rs"
+
+[[native.module]]
+id = "pointer"
+name = "planar_pointer"
+file = "crates/horizon-client/src/game.rs"
+source = "src/pointer.rs"
+
+[[native.mixin]]
+id = "side-render"
+target = "horizon_client::game::Game<'_>::render"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-render.rs"
+bindings = [
+    { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+]
+
+[[native.mixin]]
+id = "side-client-tick"
+target = "horizon_client::game::remote::Game<'_>::tick_remote"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-client-tick.rs"
+bindings = [
+    { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+]
+
+[[native.mixin]]
+id = "side-dragon-pose"
+target = "horizon_client::game::dragon::Dragon::sample_lerp"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-dragon-pose.rs"
+bindings = [
+    { name = "dragon", ty = "&Dragon", value = "self" },
+    { name = "delay", ty = "usize", value = "delay" },
+    { name = "partial", ty = "f32", value = "partial" },
+]
+
+[[native.mixin]]
+id = "side-server-tick"
+target = "horizon_client::game::Game<'_>::tick_world"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-server-tick.rs"
+bindings = [
+    { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+    { name = "running", ty = "bool", value = "running" },
+]
+
+[[native.mixin]]
+id = "side-camera"
+target = "horizon_client::game::perspective::Game<'_>::camera_view"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-camera.rs"
+bindings = [
+    { name = "game", ty = "&crate::game::Game<'_>", value = "&*self" },
+    { name = "partial", ty = "f32", value = "partial" },
+]
+
+[[native.mixin]]
+id = "side-camera-hook"
+target = "horizon_client::game::native_hooks::Game<'_>::native_camera_pose_now"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-camera-hook.rs"
+bindings = [
+    { name = "game", ty = "&crate::game::Game<'_>", value = "self" },
+    { name = "view", ty = "(glam::DVec3, f32, f32)", value = "view" },
+]
+
+[[native.mixin]]
+id = "side-no-cycle"
+target = "horizon_client::game::perspective::Game<'_>::cycle_camera"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-no-cycle.rs"
+bindings = [
+    { name = "game", ty = "&crate::game::Game<'_>", value = "&*self" },
+]
+
+[[native.mixin]]
+id = "side-no-bob"
+target = "horizon_client::game::fov::Game<'_>::bob_matrix"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-no-bob.rs"
+bindings = [
+    { name = "game", ty = "&crate::game::Game<'_>", value = "self" },
+]
+
+[[native.mixin]]
+id = "side-no-spin"
+target = "horizon_client::game::fov::Game<'_>::spinning_matrix"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-no-spin.rs"
+bindings = [
+    { name = "game", ty = "&crate::game::Game<'_>", value = "self" },
+]
+
+[[native.mixin]]
+id = "side-lens"
+target = "horizon_client::game::fov::Game<'_>::fov_degrees"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-lens.rs"
+bindings = [
+    { name = "game", ty = "&crate::game::Game<'_>", value = "self" },
+]
+
+[[native.mixin]]
+id = "side-cursor"
+target = "horizon_client::game::pointer_capture::Game<'_>::look_turn"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-cursor.rs"
+bindings = [
+    { name = "game", ty = "&crate::game::Game<'_>", value = "&*self" },
+]
+
+[[native.mixin]]
+id = "side-pointer-grab"
+target = "horizon_client::game::pointer_capture::Game<'_>::internal_grab"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-pointer-grab.rs"
+bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "self" }]
+
+[[native.mixin]]
+id = "side-pointer-event"
+target = "horizon_client::game::Game<'_>::handle_window_event_inner"
+kind = "HEAD"
+helper = "src/hooks/side-pointer-event.rs"
+bindings = [
+    { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+    { name = "event", ty = "&WindowEvent", value = "&event" },
+]
+
+[[native.mixin]]
+id = "side-pick"
+target = "horizon_client::game::Game<'_>::pick"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-pick.rs"
+bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "self" }]
+
+[[native.mixin]]
+id = "side-pick-unfiltered"
+target = "horizon_client::game::client_targeting::Game<'_>::pick_unfiltered"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-pick-unfiltered.rs"
+bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "self" }]
+
+[[native.mixin]]
+id = "side-pick-fluid"
+target = "horizon_client::game::Game<'_>::pick_fluid"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-pick-fluid.rs"
+bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "self" }]
+
+[[native.mixin]]
+id = "side-before-block"
+target = "horizon_client::game::frames::Game<'_>::before_block"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-before-block.rs"
+bindings = [
+    { name = "game", ty = "&crate::game::Game<'_>", value = "self" },
+    { name = "distance", ty = "f64", value = "distance" },
+]
+
+[[native.mixin]]
+id = "side-default-outline"
+target = "horizon_client::game::native_hooks::base::Game<'_>::native_block_highlight"
+kind = "HEAD"
+helper = "src/hooks/side-default-outline.rs"
+bindings = [
+    { name = "game", ty = "&crate::game::Game<'_>", value = "self" },
+    { name = "canceled", ty = "&mut bool", value = "&mut *canceled" },
+]
+
+[[native.mixin]]
+id = "side-use-press"
+target = "horizon_client::game::remote::Game<'_>::remote_handle_input"
+kind = "HEAD"
+helper = "src/hooks/side-use-press.rs"
+bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }]
+
+[[native.mixin]]
+id = "side-mouse-buttons"
+target = "horizon_client::game::play_input::Game<'_>::play_mouse"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-mouse-buttons.rs"
+bindings = [
+    { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+    { name = "button", ty = "MouseButton", value = "button" },
+    { name = "pressed", ty = "bool", value = "pressed" },
+]
+
+[[native.mixin]]
+id = "side-aim"
+target = "horizon_client::game::Game<'_>::aim"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-aim.rs"
+bindings = [
+    { name = "game", ty = "&crate::game::Game<'_>", value = "self" },
+]
+
+[[native.mixin]]
+id = "side-reticle"
+target = "horizon_client::game::native_hooks::gui_render_post::Game<'_>::native_gui_render_post"
+kind = "HEAD"
+helper = "src/hooks/side-reticle.rs"
+bindings = [
+    { name = "game", ty = "&crate::game::Game<'_>", value = "self" },
+    { name = "batch", ty = "&mut crate::hud::HudBatch", value = "&mut *batch" },
+    { name = "gui_hidden", ty = "bool", value = "gui_hidden" },
+]
+
+[[native.mixin]]
+id = "side-send"
+target = "horizon_client::game::remote::Game<'_>::remote_send_state"
+kind = "HEAD"
+helper = "src/hooks/side-send.rs"
+bindings = [
+    { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+]
+
+# side-boat/cart/tnt/rocket-bounds: the dd67b76 build no longer indexes the entity bounds
+# functions (Boat/Minecart/PrimedTnt/Rocket::bounds); the entity modules were restructured.
+# Their boxes are flattened no more, so a boat or cart may overlap the background layer.
+# [[native.mixin]]
+# id = "side-boat-bounds"
+# target = "horizon_client::game::boats::Boat::bounds"
+# kind = "HEAD"
+# cancellable = true
+# helper = "src/hooks/side-boat-bounds.rs"
+# bindings = [
+#     { name = "entity", ty = "&Boat", value = "self" },
+# ]
+
+# [[native.mixin]]
+# id = "side-cart-bounds"
+# target = "horizon_client::game::minecarts::Minecart::bounds"
+# kind = "HEAD"
+# cancellable = true
+# helper = "src/hooks/side-cart-bounds.rs"
+# bindings = [
+#     { name = "entity", ty = "&Minecart", value = "self" },
+# ]
+
+# [[native.mixin]]
+# id = "side-tnt-bounds"
+# target = "horizon_client::game::tnt::PrimedTnt::bounds"
+# kind = "HEAD"
+# cancellable = true
+# helper = "src/hooks/side-tnt-bounds.rs"
+# bindings = [
+#     { name = "entity", ty = "&PrimedTnt", value = "self" },
+# ]
+
+
+
+[[native.mixin]]
+id = "side-fluid-boundary"
+target = "horizon_client::game::level_access::<GameLevel<'_> as LevelAccess>::block_state"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-fluid-boundary.rs"
+bindings = [
+    { name = "level", ty = "&GameLevel<'_>", value = "self" },
+    { name = "pos", ty = "BlockPos", value = "pos" },
+]
+
+[[native.mixin]]
+id = "side-track"
+target = "horizon_client::game::lan::Game<'_>::lan_entities"
+kind = "HEAD"
+helper = "src/hooks/side-track.rs"
+bindings = [
+    { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+]
+
+# [[native.mixin]]
+# id = "side-rocket-bounds"
+# target = "horizon_client::game::fireworks::Rocket::bounds"
+# kind = "HEAD"
+# cancellable = true
+# helper = "src/hooks/side-rocket-bounds.rs"
+# bindings = [
+#     { name = "entity", ty = "&Rocket", value = "self" },
+# ]
+
+[[native.mixin]]
+id = "side-ray"
+target = "horizon_client::game::Game<'_>::clip_ray"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/side-ray.rs"
+bindings = [
+    { name = "game", ty = "&crate::game::Game<'_>", value = "self" },
+    { name = "origin", ty = "[f64; 3]", value = "origin" },
+    { name = "dir", ty = "[f64; 3]", value = "dir" },
+    { name = "reach", ty = "f64", value = "reach" },
+]
+
+
+# side-falling-bounds / side-trident-bounds: patching a function in
+# game/entities/entity.rs makes the tool copy that module's use block into the
+# patched crate, where its pub(crate) macros are not visible (E0603). Both rows
+# need a site outside that module.
+# [[native.mixin]]
+# id = "side-falling-bounds"
+# target = "horizon_client::game::entity::<FallingBlock as Entity>::bounds"
+# kind = "HEAD"
+# cancellable = true
+# helper = "src/hooks/side-falling-bounds.rs"
+# bindings = [{ name = "entity", ty = "&FallingBlock", value = "self" }]
+#
+# [[native.mixin]]
+# id = "side-trident-bounds"
+# target = "horizon_client::game::entity::<ThrownTrident as Entity>::bounds"
+# kind = "HEAD"
+# cancellable = true
+# helper = "src/hooks/side-trident-bounds.rs"
+# bindings = [{ name = "entity", ty = "&ThrownTrident", value = "self" }]
+
+
+[[native.module]]
+id = "trees"
+name = "planar_trees"
+file = "crates/horizon-client/src/game.rs"
+source = "src/trees.rs"
+
+[[native.module]]
+id = "lighting"
+name = "planar_lighting"
+file = "crates/horizon-client/src/game.rs"
+source = "src/lighting.rs"
+visibility = "pub"
+
+[[native.module]]
+id = "canopy"
+name = "planar_canopy"
+file = "crates/horizon-client/src/game.rs"
+source = "src/canopy.rs"
+
+[[native.module]]
+id = "background"
+name = "planar_background"
+file = "crates/horizon-client/src/game.rs"
+source = "src/background.rs"
+
+[[native.mixin]]
+id = "planar-remote-use"
+target = "horizon_client::game::remote::interaction_prediction::Game<'_>::remote_use_item_on"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/planar-remote-use.rs"
+bindings = [
+    { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+    { name = "hand", ty = "Hand", value = "hand" },
+]
+
+[[native.mixin]]
+id = "background-server-use"
+target = "horizon_client::game::item_actions::Game<'_>::use_item_as_player"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/background-server-use.rs"
+bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }]
+
+[[native.mixin]]
+id = "background-server-break"
+target = "horizon_client::game::Game<'_>::break_block_as_player"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/background-server-break.rs"
+bindings = [
+    { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+    { name = "pos", ty = "[i32; 3]", value = "pos" },
+]
+
+[[native.mixin]]
+id = "background-predict-break"
+target = "horizon_client::game::remote::break_prediction::Game<'_>::predict_break"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/background-predict-break.rs"
+bindings = [
+    { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+    { name = "pos", ty = "[i32; 3]", value = "pos" },
+    { name = "state", ty = "BlockStateId", value = "state" },
+    { name = "sequence", ty = "i32", value = "sequence" },
+]
+
+[[native.mixin]]
+id = "background-remote-sync"
+target = "horizon_client::game::remote::Game<'_>::set_block"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/background-remote-sync.rs"
+bindings = [
+    { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+    { name = "pos", ty = "[i32; 3]", value = "pos" },
+    { name = "state", ty = "i32", value = "state" },
+    { name = "predicted", ty = "bool", value = "predicted" },
+]
+
+[[native.mixin]]
+id = "relight-slice-edit"
+target = "horizon_client::game::remote::Game<'_>::set_block"
+kind = "HEAD"
+helper = "src/hooks/relight-slice-edit.rs"
+bindings = [
+    { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+    { name = "pos", ty = "[i32; 3]", value = "pos" },
+    { name = "state", ty = "i32", value = "state" },
+]
+
+[[native.module]]
+id = "physics"
+name = "planar_physics"
+file = "crates/horizon-client/src/game.rs"
+source = "src/physics.rs"
+
+# side-server-move: 0.3.6 clamped the z in Hub::move_player's HEAD mixin, but the
+# pinned build's function index does not list that function (only
+# Hub::set_mod_commands), so it cannot be patched here. side-server-tick clamps the
+# server's guest positions instead.
+# [[native.mixin]]
+# id = "side-server-move"
+# target = "horizon_client::lan::hub::Hub::move_player"
+# kind = "HEAD"
+# cancellable = true
+# helper = "src/hooks/side-server-move.rs"
+# bindings = [
+#     { name = "hub", ty = "&mut Hub", value = "&mut *self" },
+#     { name = "i", ty = "usize", value = "i" },
+#     { name = "pos", ty = "Option<[f64; 3]>", value = "pos" },
+#     { name = "rot", ty = "Option<(f32, f32)>", value = "rot" },
+#     { name = "flags", ty = "u8", value = "flags" },
+#     { name = "ctx", ty = "&TickCtx<'_>", value = "ctx" },
+#     { name = "events", ty = "&mut Vec<HostEvent>", value = "&mut *events" },
+# ]
+
+[[native.mixin]]
+id = "planar-open-ready"
+target = "horizon_client::game::integrated::Game<'_>::poll_integrated_start"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/planar-open-ready.rs"
+bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "&*self" }]
+
+[[native.mixin]]
+id = "planar-level-write"
+target = "horizon_client::game::level_access::<GameLevel<'_> as LevelAccess>::set_raw"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/planar-level-write.rs"
+bindings = [{ name = "pos", ty = "BlockPos", value = "pos" }]
+
+# planar-crack-origin: refused twice. MODIFY_ARG/MODIFY_VARIABLE on
+# Game::entity_geometry, with or without a `slice`, both fail with
+# E_UNSUPPORTED_MACRO (ambiguous macro identity in the copied body), while a
+# HEAD mixin on the same function applies — so the tool allows insertion, not
+# rewriting, here. Background cracks therefore render at foreground depth.
+# The helper stays in src/hooks/planar-crack-origin.rs.
+
+[[native.module]]
+id = "uploads"
+name = "planar_upload"
+file = "crates/horizon-client/src/game.rs"
+source = "src/upload.rs"
+
+[[native.mixin]]
+id = "planar-player-physics"
+target = "horizon_client::game::remote::Game<'_>::tick_local_player"
+kind = "HEAD"
+cancellable = true
+helper = "src/hooks/planar-player-physics.rs"
+bindings = [
+    { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+    { name = "entity_collisions", ty = "&[horizon_core::geometry::Aabb]", value = "&*entity_collisions" },
+    { name = "pushed", ty = "Vec3", value = "pushed" },
+    { name = "sprint_window", ty = "i32", value = "sprint_window" },
+]
+
+# planar-mob-physics: the pinned build refuses a HEAD mixin on tick_creatures
+# because the tool cannot re-export its private macros (`entity_lists_of`,
+# `borrow_lists`, `borrow_level_list`) into the patched crate (E0603). The
+# foreground physics view for mobs needs another site.
+# [[native.mixin]]
+# id = "planar-mob-physics"
+# target = "horizon_client::game::creatures::Game<'_>::tick_creatures"
+# kind = "HEAD"
+# cancellable = true
+# helper = "src/hooks/planar-mob-physics.rs"
+# bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }]
+
+# planar-upload: BEFORE_CALL on update_world is refused by the pinned build
+# (E_UNSUPPORTED_MACRO), same class as planar-crack-origin. Background meshing
+# needs a supported replacement before this row can come back.
+# [[native.mixin]]
+# id = "planar-upload"
+# target = "horizon_client::game::world_update::Game<'_>::update_world"
+# kind = "BEFORE_CALL"
+# selector = "self.streaming.extra.truncate"
+# require = 1
+# ordinal = 0
+# helper = "src/hooks/planar-upload.rs"
+# bindings = [
+#     { name = "game", ty = "&crate::game::Game<'_>", value = "&*self" },
+#     { name = "uploads", ty = "&mut Vec<((i32, i32, i32), horizon_client::mesher::SectionMesh)>", value = "$local_mut:uploads:0" },
+# ]
