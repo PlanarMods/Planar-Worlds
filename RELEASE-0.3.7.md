@@ -9,8 +9,8 @@ Final, 2026-11-22 (Asia/Shanghai). Migrated from `0b14f8a` to `dd67b76` (Horizon
 | Base nightly | `nightly-2026-11-18-dd67b76` (`dd67b76ff23e28c6d8e21859df600d31572f81a0`) |
 | Native build | latest: `native-dd67b76-1a2b88bd760d` (each `native-build` supersedes; check `%APPDATA%\horizon-launcher\versions`) |
 | Package | `planar_worlds-0.3.7.hmod` (repo root copy refreshed at release; the installed one is `%APPDATA%\horizon\horizon-native-mods\planar_worlds.hmod`) |
-| Signature | **stale** — the current `.hmod` is unsigned; the old `.minisig` does not verify against it. The DPAPI password blob no longer decrypts the signing key; re-sign after resolving the key/password (see below) |
-| Public key | `RWQdhOB6/ghLv7vRQVstRqABa89hrLOnxlzyR8WnxiSNyHHRw61rrPyb` |
+| Public key | `RWQ34YEEsas2r0KTrPEMRVqTVaXCt6J1SRh0HT4nILG6qJ2CBs0v7Qll` (new pair generated 2026-11-22; the old key's DPAPI password was unrecoverable) |
+| Signature | `planar_worlds-0.3.7.hmod.minisig` verifies against the new public key |
 | Enabled | `horizon-mods.txt`: `mod.planar_worlds:true` |
 
 ## Fixed in this round
@@ -68,11 +68,16 @@ brightness (two regressions came from mixing these up).
 
 ## Signing state
 
-The DPAPI blob at `%LOCALAPPDATA%\PlanarMods\Signing\planar_worlds.password.dpapi` decrypts to
-a 32-character string that minisign 0.12 rejects for `planar_worlds.minisign.key` ("Wrong
-password for that key"). Either the key was regenerated after the blob was saved, or the blob
-is from another key. Resolve before publishing: re-save the password with `minisign -C`, or
-generate a new pair and update the public key in the registry/README.
+Resolved 2026-11-22: a fresh minisign keypair replaced the old one (the old DPAPI blob no
+longer decrypted the old key; old files kept as `*.old-20261122` in the signing folder). The
+new password is stored DPAPI-protected at
+`%LOCALAPPDATA%\PlanarMods\Signing\planar_worlds.password.dpapi`; the public key is in the
+table above. `planar_worlds-0.3.7.hmod` is signed and verifies
+(`minisign -V -m planar_worlds-0.3.7.hmod -p <pub>`).
+
+**Publishing note:** the mod registry entry still carries the old public key
+(`RWQdhOB6/ghLv7vRQVstRqABa89hrLOnxlzyR8WnxiSNyHHRw61rrPyb`) — update it to the new one
+when pushing 0.3.7 to the registry, or signature checks will fail for players.
 
 ## Working state
 
